@@ -23,6 +23,9 @@ fn main() {
     // Last instruction ID
     let mut id = 0;
 
+    let mut bracket_queue = vec!();
+    let mut branch_id = 0;
+
     loop {
         match chars.next() {
             Some('>') => {
@@ -100,6 +103,36 @@ fn main() {
                     , id+1, id+2, id+3, id+2, id+3, id+1).as_str()
                 );
                 id+=3;
+            },
+            Some('[') => {
+                ir.push_str(
+                    formatdoc!(
+                        "
+                        br label %l{}
+                    l{}:
+                        %{} = load i8*, i8** %sp
+                        %{} = load i8, i8* %{}
+                        %{} = icmp eq i8 %{}, 0
+                        br i1 %{}, label %l{}, label %l{}
+                    
+                    l{}:
+                        "
+                    , branch_id+1, branch_id+1, id+1, id+2, id+1, id+3, id+2, id+3, branch_id+3, branch_id+2, branch_id+2).as_str()
+                );
+                bracket_queue.push((branch_id+1,branch_id+3));
+                id+=3;
+                branch_id+=3;
+            },
+            Some(']') => {
+                let (header, next) = bracket_queue.pop().unwrap();
+                ir.push_str(
+                    formatdoc!(
+                        "
+                        br label %l{}
+                    l{}:
+                        "
+                    , header, next).as_str()
+                );
             },
             None => break,
             _ => {},
