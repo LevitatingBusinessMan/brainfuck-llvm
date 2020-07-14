@@ -2,9 +2,10 @@ use std::env;
 use std::fs::File;
 use std::io::Read;
 use indoc::{formatdoc};
+use regex::Regex;
 
 fn main() {
-     let args: Vec<String> = env::args().skip(1).collect();
+    let args: Vec<String> = env::args().skip(1).collect();
     
     if args.len() == 0 {
         println!("Please specify a brainfuck file");
@@ -109,6 +110,7 @@ fn main() {
                     formatdoc!(
                         "
                         br label %l{}
+                        
                     l{}:
                         %{} = load i8*, i8** %sp
                         %{} = load i8, i8* %{}
@@ -124,11 +126,12 @@ fn main() {
                 branch_id+=3;
             },
             Some(']') => {
-                let (header, next) = bracket_queue.pop().unwrap();
+                let (header, next) = bracket_queue.pop().expect("Found closing bracket before opening bracket");
                 ir.push_str(
                     formatdoc!(
                         "
                         br label %l{}
+
                     l{}:
                         "
                     , header, next).as_str()
@@ -138,6 +141,11 @@ fn main() {
             _ => {},
         }
     }
+
+    //Fix broken indents (in the future i'll just edit indoc to fix this)
+    let fixed_ir = Regex::new(r"(?m)^([^l\s++\n]|$)")
+        .unwrap()
+        .replace_all(&ir, "    $1$2");
 
     let output = formatdoc!(
         "
@@ -152,14 +160,14 @@ fn main() {
             %sp = alloca i8*
             store i8* %stack , i8** %sp
         
-            {}
+        {}
         
             call void @free(i8* %stack)
             ret i32 0
         }}
         
         "
-    , ir);
+    , fixed_ir);
 
     println!("{}", output);
 

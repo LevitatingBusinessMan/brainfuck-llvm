@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 indoc = {git = "https://github.com/Cerberuser/indoc", branch = "printdoc"}
+#indoc = { path = "./indoc"}
+regex = "1.3.9"
