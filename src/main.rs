@@ -1,18 +1,36 @@
 use std::env;
 use std::fs::File;
 use std::io::Read;
-use indoc::{formatdoc};
+use indoc::formatdoc;
 use regex::Regex;
+use std::process::{Command, Stdio};
+use std::io::Write;
 
 fn main() {
-    let args: Vec<String> = env::args().skip(1).collect();
-    
-    if args.len() == 0 {
+    let mut input = String::new();
+    let mut output_file = String::new();
+
+    // If this is true then the previous argument was the output flag
+    let mut output_flag = false;
+    for argument in  env::args().skip(1) {
+        if argument == "-o" {
+            output_flag = true;
+            continue;
+        }
+        if output_flag {
+            output_file = argument;
+            output_flag = false;
+        } else {
+            input = argument;
+        }
+    }
+
+    if input.len() < 1 {
         println!("Please specify a brainfuck file");
         std::process::exit(1);
     }
 
-    let mut f = File::open(&args[0]).expect("Error opening file");
+    let mut f = File::open(&input).expect("Error opening file");
     let mut brainfuck = String::new();
     f.read_to_string(&mut brainfuck).expect("Error reading to string");
 
@@ -167,6 +185,36 @@ fn main() {
         "
     , ir);
 
-    println!("{}", output);
+    if output_file.len() < 1 {
+        println!("{}", output);
+    }
+    
+    // Now we compile this stuff
+    else {
+        let mut llc = Command::new("llc")
+            .args(&["-o", "/tmp/test.s"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+            .ok()
+            .expect("Failed to spawn llc process");
+
+        llc.stdin.as_mut().unwrap().write_all(output.as_bytes()).unwrap();
+        let assembly = llc.wait_with_output().unwrap();
+        
+        //Yet to figure out how to link llc stdout to gcc stdin
+
+        let mut gcc = Command::new("gcc")
+            .arg("/tmp/test.s")
+            .args(&["-o", &output_file])
+            //.arg("-x assembler -")
+            .stdin(Stdio::piped())
+            .spawn()
+            .ok()
+            .expect("Failed to spawn gcc process");
+
+        //gcc.stdin.as_mut().unwrap().write_all(&assembly.stdout).unwrap();
+
+    }
 
 }
