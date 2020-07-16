@@ -36,7 +36,7 @@ fn main() {
                         %{} = load i8*, i8** %sp
                         %{} = getelementptr inbounds i8, i8* %{}, i32 1
                         store i8* %{}, i8** %sp
-                    -"
+                    ~"
                     , id+1, id+2, id+1, id+2).as_str()
                 );
                 id+=2;
@@ -48,7 +48,7 @@ fn main() {
                         %{} = load i8*, i8** %sp
                         %{} = getelementptr inbounds i8, i8* %{}, i32 -1
                         store i8* %{}, i8** %sp
-                    -"
+                    ~"
                     , id+1, id+2, id+1, id+2).as_str()
                 );
                 id+=2;
@@ -61,7 +61,7 @@ fn main() {
                         %{} = load i8, i8* %{}
                         %{} = add i8 %{}, 1
                         store i8 %{}, i8* %{}
-                    -"
+                    ~"
                     , id+1, id+2, id+1, id+3, id+2, id+3, id+1).as_str()
                 );
                 id+=3;
@@ -74,7 +74,7 @@ fn main() {
                         %{} = load i8, i8* %{}
                         %{} = add i8 %{}, -1
                         store i8 %{}, i8* %{}
-                    -"
+                    ~"
                     , id+1, id+2, id+1, id+3, id+2, id+3, id+1).as_str()
                 );
                 id+=3;
@@ -87,7 +87,7 @@ fn main() {
                         %{} = load i8, i8* %{}
                         %{} = sext i8 %{} to i32
                         %{} = call i32 @putchar(i32 %{})
-                    -"
+                    ~"
                     , id+1, id+2, id+1, id+3, id+2, id+4, id+3).as_str()
                 );
                 id+=4;
@@ -100,7 +100,7 @@ fn main() {
                         %{} = call i32 @getchar()
                         %{} = trunc i32 %{} to i8
                         store i8 %{}, i8* %{}
-                    -"
+                    ~"
                     , id+1, id+2, id+3, id+2, id+3, id+1).as_str()
                 );
                 id+=3;
@@ -143,7 +143,7 @@ fn main() {
     }
 
     //I places some -'s in the snippets to force indoc to leave an indent, I remove them here
-    ir = Regex::new("-").unwrap().replace_all(&ir, "").to_string();
+    ir = Regex::new("~").unwrap().replace_all(&ir, "").to_string();
 
     let output = formatdoc!(
         "
