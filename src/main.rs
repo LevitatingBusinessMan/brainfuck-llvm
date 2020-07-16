@@ -25,6 +25,11 @@ fn main() {
         }
     }
 
+    if output_flag {
+        println!("When using the \"-o\" flag please specify an output file");
+        std::process::exit(1);
+    }
+
     if input.len() < 1 {
         println!("Please specify a brainfuck file");
         std::process::exit(1);
