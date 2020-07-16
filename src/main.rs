@@ -185,35 +185,32 @@ fn main() {
         "
     , ir);
 
+    // Print to stdout
     if output_file.len() < 1 {
         println!("{}", output);
     }
     
-    // Now we compile this stuff
+    // Compile
     else {
         let mut llc = Command::new("llc")
-            .args(&["-o", "/tmp/test.s"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()
             .ok()
             .expect("Failed to spawn llc process");
 
+
+        //Write IR to llc stdin
         llc.stdin.as_mut().unwrap().write_all(output.as_bytes()).unwrap();
-        let assembly = llc.wait_with_output().unwrap();
         
-        //Yet to figure out how to link llc stdout to gcc stdin
+        let assembly = llc.stdout.unwrap();
 
         let mut gcc = Command::new("gcc")
-            .arg("/tmp/test.s")
-            .args(&["-o", &output_file])
-            //.arg("-x assembler -")
-            .stdin(Stdio::piped())
+            .args(&["-xassembler", "-", "-o", &output_file])
+            .stdin(assembly)
             .spawn()
             .ok()
             .expect("Failed to spawn gcc process");
-
-        //gcc.stdin.as_mut().unwrap().write_all(&assembly.stdout).unwrap();
 
     }
 
