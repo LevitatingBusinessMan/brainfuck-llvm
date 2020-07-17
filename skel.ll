@@ -3,16 +3,16 @@ declare void @free(i8*)
 declare i32 @putchar(i32)
 declare i32 @getchar()
 
-define i32 @main() {
-	; Setup cell stack in heap
-	%stack = call i8* @calloc(i32 1000, i32 1)
+define i32 @main() {{
+	; Allocate memory for the tape
+	%stack = call i8* @calloc(i32 30000, i32 1)
 
-	; Setup stack pointer
+	; Create data pointer
 	%sp = alloca i8*
 	store i8* %stack , i8** %sp
 
-	; Code here
+	;; Code goes here
 
 	call void @free(i8* %stack)
 	ret i32 0
-}
+}}

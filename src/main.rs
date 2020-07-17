@@ -1,10 +1,9 @@
 use std::env;
 use std::fs::File;
-use std::io::Read;
 use indoc::formatdoc;
 use regex::Regex;
 use std::process::{Command, Stdio};
-use std::io::Write;
+use std::io::{self, Read, Write};
 
 fn main() {
     let mut input = String::new();
@@ -35,9 +34,15 @@ fn main() {
         std::process::exit(1);
     }
 
-    let mut f = File::open(&input).expect("Error opening file");
     let mut brainfuck = String::new();
-    f.read_to_string(&mut brainfuck).expect("Error reading to string");
+
+    // Grab input from stdin or file
+    if input == "-" {
+        io::stdin().read_to_string(&mut brainfuck).expect("Error reading stdin");
+    } else {
+        let mut f = File::open(&input).expect("Error opening file");
+        f.read_to_string(&mut brainfuck).expect("Error reading to string");
+    }
 
     let mut ir = String::new();
 
@@ -176,7 +181,7 @@ fn main() {
         declare i32 @getchar()
         
         define i32 @main() {{
-            %stack = call i8* @calloc(i32 1000, i32 1)
+            %stack = call i8* @calloc(i32 30000, i32 1)
         
             %sp = alloca i8*
             store i8* %stack , i8** %sp
@@ -210,7 +215,7 @@ fn main() {
         
         let assembly = llc.stdout.unwrap();
 
-        let mut gcc = Command::new("gcc")
+        let _gcc = Command::new("gcc")
             .args(&["-xassembler", "-", "-o", &output_file])
             .stdin(assembly)
             .spawn()
